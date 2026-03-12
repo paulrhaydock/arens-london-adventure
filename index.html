@@ -1,0 +1,1359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Aren's London Adventure!</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  body {
+    font-family: 'Nunito', 'Comic Sans MS', 'Arial Rounded MT Bold', sans-serif;
+    font-size: 18px;
+    line-height: 1.6;
+    color: #333;
+    background: #fff;
+    padding-bottom: 80px;
+    overflow-x: hidden;
+  }
+
+  /* ========== SPLASH SCREEN ========== */
+  #splash {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    z-index: 9999;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    transition: opacity 0.8s ease, transform 0.8s ease;
+  }
+  #splash.hide {
+    opacity: 0;
+    transform: scale(1.1);
+    pointer-events: none;
+  }
+  .splash-train {
+    font-size: 5em;
+    animation: splashTrain 2s ease-in-out infinite;
+  }
+  @keyframes splashTrain {
+    0%, 100% { transform: translateX(-30px); }
+    50% { transform: translateX(30px); }
+  }
+  .splash-title {
+    font-size: 2.2em;
+    font-weight: 900;
+    margin-top: 20px;
+    text-shadow: 3px 3px 6px rgba(0,0,0,0.3);
+    animation: splashPulse 1.5s ease-in-out infinite;
+  }
+  @keyframes splashPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+  }
+  .splash-loading {
+    margin-top: 30px;
+    font-size: 1.2em;
+    opacity: 0.8;
+  }
+  .splash-dots::after {
+    content: '';
+    animation: dots 1.5s steps(4, end) infinite;
+  }
+  @keyframes dots {
+    0% { content: ''; }
+    25% { content: '.'; }
+    50% { content: '..'; }
+    75% { content: '...'; }
+  }
+  .splash-flags {
+    font-size: 3em;
+    margin-top: 20px;
+    letter-spacing: 10px;
+    animation: flagWave 2s ease-in-out infinite alternate;
+  }
+  @keyframes flagWave {
+    0% { transform: rotate(-3deg); }
+    100% { transform: rotate(3deg); }
+  }
+
+  /* ========== STICKY BOTTOM NAV ========== */
+  .bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    background: rgba(255,255,255,0.97);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-top: 3px solid #667eea;
+    display: flex;
+    justify-content: space-around;
+    padding: 8px 5px;
+    padding-bottom: max(8px, env(safe-area-inset-bottom));
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
+  }
+  .nav-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    background: none;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 900;
+    font-size: 0.7em;
+    color: #888;
+    padding: 6px 8px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 60px;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .nav-btn .nav-emoji {
+    font-size: 1.8em;
+    margin-bottom: 2px;
+    transition: transform 0.3s ease;
+  }
+  .nav-btn.active {
+    color: #667eea;
+    background: rgba(102,126,234,0.12);
+  }
+  .nav-btn.active .nav-emoji {
+    transform: scale(1.2);
+  }
+  .nav-btn:active {
+    transform: scale(0.92);
+  }
+
+  /* ========== COVER PAGE ========== */
+  .cover {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    text-align: center;
+    padding: 40px 20px;
+  }
+  .cover h1 {
+    font-size: 3em;
+    font-weight: 900;
+    margin-bottom: 10px;
+    text-shadow: 3px 3px 6px rgba(0,0,0,0.3);
+    animation: coverTitle 1s ease-out both;
+    animation-delay: 0.3s;
+  }
+  @keyframes coverTitle {
+    from { opacity: 0; transform: translateY(30px) scale(0.9); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  .cover .subtitle {
+    font-size: 1.6em;
+    font-weight: 700;
+    margin-bottom: 30px;
+    opacity: 0.95;
+    animation: coverTitle 1s ease-out both;
+    animation-delay: 0.6s;
+  }
+  .cover .dates {
+    font-size: 1.2em;
+    background: rgba(255,255,255,0.2);
+    padding: 15px 25px;
+    border-radius: 15px;
+    margin-bottom: 30px;
+    animation: coverTitle 1s ease-out both;
+    animation-delay: 0.9s;
+  }
+  .cover .emoji-row {
+    font-size: 2.8em;
+    margin: 15px 0;
+    letter-spacing: 15px;
+  }
+  .cover .emoji-row.train-row {
+    animation: trainMove 4s ease-in-out infinite;
+  }
+  @keyframes trainMove {
+    0%, 100% { transform: translateX(-20px); }
+    50% { transform: translateX(20px); }
+  }
+  .cover .train-fact {
+    font-size: 1em;
+    background: rgba(255,255,255,0.15);
+    padding: 15px 25px;
+    border-radius: 12px;
+    margin-top: 20px;
+    max-width: 500px;
+    animation: coverTitle 1s ease-out both;
+    animation-delay: 1.2s;
+  }
+  .cover .scroll-hint {
+    margin-top: 30px;
+    font-size: 1.5em;
+    animation: bounce 2s ease-in-out infinite;
+    opacity: 0.8;
+  }
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(10px); }
+  }
+
+  /* ========== DAY PAGES ========== */
+  .day-page {
+    min-height: 100vh;
+    padding: 25px 20px;
+    padding-bottom: 40px;
+  }
+
+  .day-header {
+    text-align: center;
+    padding: 25px 20px;
+    border-radius: 20px;
+    margin-bottom: 25px;
+    color: white;
+  }
+  .day-header h2 {
+    font-size: 2em;
+    font-weight: 900;
+  }
+  .day-header .day-subtitle {
+    font-size: 1.1em;
+    opacity: 0.9;
+    margin-top: 5px;
+  }
+
+  .friday-header { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+  .saturday-header { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+  .sunday-header { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); color: #333; }
+  .monday-header { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); color: #333; }
+
+  /* ========== SLIDE-IN ANIMATION ========== */
+  .activity, .photo-row, .fun-fact, .checklist, .weather-box, .special-banner {
+    opacity: 0;
+    transform: translateY(40px);
+    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+  }
+  .activity.visible, .photo-row.visible, .fun-fact.visible, .checklist.visible,
+  .weather-box.visible, .special-banner.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  /* Stagger the animations slightly */
+  .activity:nth-child(odd) {
+    transform: translateX(-30px) translateY(20px);
+  }
+  .activity:nth-child(even) {
+    transform: translateX(30px) translateY(20px);
+  }
+  .activity.visible:nth-child(odd),
+  .activity.visible:nth-child(even) {
+    transform: translateX(0) translateY(0);
+  }
+
+  /* ========== ACTIVITY CARDS ========== */
+  .activity {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 18px;
+    padding: 18px;
+    border-radius: 18px;
+    background: #f8f9ff;
+    border-left: 6px solid #667eea;
+    -webkit-tap-highlight-color: transparent;
+    transition: opacity 0.6s ease-out, transform 0.6s ease-out, box-shadow 0.2s ease;
+  }
+  .activity:active {
+    box-shadow: 0 2px 15px rgba(102,126,234,0.3);
+  }
+  .activity.highlight {
+    background: #fff3cd;
+    border-left-color: #ffc107;
+  }
+  .activity.transport {
+    background: #e8f5e9;
+    border-left-color: #4caf50;
+  }
+  .activity.food {
+    background: #fce4ec;
+    border-left-color: #e91e63;
+  }
+  .activity .emoji-icon {
+    font-size: 2.5em;
+    margin-right: 15px;
+    flex-shrink: 0;
+    min-width: 50px;
+    text-align: center;
+    animation: emojiPulse 3s ease-in-out infinite;
+  }
+  @keyframes emojiPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+  }
+  .activity .activity-content {
+    flex: 1;
+  }
+  .activity .activity-content h3 {
+    font-size: 1.25em;
+    font-weight: 900;
+    margin-bottom: 3px;
+    color: #333;
+  }
+  .activity .activity-content p {
+    font-size: 1em;
+    color: #555;
+  }
+  .activity .time-badge {
+    background: #667eea;
+    color: white;
+    padding: 4px 12px;
+    border-radius: 10px;
+    font-size: 0.8em;
+    font-weight: 700;
+    display: inline-block;
+    margin-bottom: 5px;
+  }
+
+  /* ========== IMAGE CARDS ========== */
+  .photo-row {
+    display: flex;
+    gap: 15px;
+    margin: 20px 0;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .photo-card {
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+    flex: 1;
+    min-width: 200px;
+    max-width: 400px;
+    transition: transform 0.3s ease;
+  }
+  .photo-card:active {
+    transform: scale(0.97);
+  }
+  .photo-card img {
+    width: 100%;
+    height: 220px;
+    object-fit: cover;
+    display: block;
+  }
+  .photo-card .caption {
+    padding: 10px 14px;
+    text-align: center;
+    font-weight: 700;
+    font-size: 0.95em;
+    background: #f0f0f0;
+  }
+
+  /* ========== TRANSPORT CHECKLIST ========== */
+  .checklist-section {
+    padding: 25px 20px;
+    padding-bottom: 100px;
+  }
+  .checklist-header {
+    text-align: center;
+    padding: 30px 20px;
+  }
+  .checklist-header h2 {
+    font-size: 2.2em;
+    margin-bottom: 5px;
+  }
+  .checklist-header p {
+    font-size: 1.2em;
+    color: #666;
+    margin-bottom: 15px;
+  }
+
+  /* Progress counter */
+  .progress-container {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 20px;
+    padding: 20px 25px;
+    margin-bottom: 25px;
+    text-align: center;
+    color: white;
+  }
+  .progress-count {
+    font-size: 2.5em;
+    font-weight: 900;
+    line-height: 1.2;
+  }
+  .progress-label {
+    font-size: 1em;
+    opacity: 0.9;
+    margin-top: 5px;
+  }
+  .progress-bar-outer {
+    background: rgba(255,255,255,0.3);
+    border-radius: 15px;
+    height: 20px;
+    margin-top: 12px;
+    overflow: hidden;
+  }
+  .progress-bar-inner {
+    background: #fff;
+    height: 100%;
+    border-radius: 15px;
+    transition: width 0.5s ease;
+    width: 0%;
+  }
+  .progress-stars {
+    font-size: 1.5em;
+    margin-top: 10px;
+    letter-spacing: 4px;
+  }
+
+  .checklist {
+    padding: 20px;
+    border-radius: 20px;
+    margin: 0 0 25px 0;
+  }
+  .checklist h3 {
+    font-size: 1.5em;
+    margin-bottom: 15px;
+    text-align: center;
+  }
+  .checklist-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .checklist-item {
+    display: flex;
+    align-items: center;
+    padding: 14px 18px;
+    background: white;
+    border-radius: 15px;
+    font-weight: 700;
+    font-size: 1em;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.3s ease;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .checklist-item:active {
+    transform: scale(0.96);
+  }
+  .checklist-item.checked {
+    background: #c8e6c9;
+    box-shadow: 0 3px 10px rgba(76,175,80,0.2);
+  }
+  .checklist-item .check-emoji {
+    font-size: 1.8em;
+    margin-right: 14px;
+    transition: transform 0.3s ease;
+    flex-shrink: 0;
+  }
+  .checklist-item.checked .check-emoji {
+    animation: checkBounce 0.5s ease;
+  }
+  @keyframes checkBounce {
+    0% { transform: scale(1); }
+    30% { transform: scale(1.4); }
+    60% { transform: scale(0.9); }
+    100% { transform: scale(1); }
+  }
+  .checklist-item .item-info {
+    flex: 1;
+  }
+  .checklist-item .item-info small {
+    color: #777;
+    font-weight: 400;
+  }
+  .checklist-item.checked .item-info {
+    text-decoration: line-through;
+    text-decoration-color: #4caf50;
+  }
+
+  .fun-fact {
+    background: #e3f2fd;
+    padding: 18px 22px;
+    border-radius: 14px;
+    margin: 18px 0;
+    font-size: 1em;
+    border-left: 5px solid #2196f3;
+  }
+  .fun-fact strong { color: #1565c0; }
+
+  .weather-box {
+    display: inline-block;
+    padding: 10px 18px;
+    border-radius: 12px;
+    font-weight: 700;
+    margin-bottom: 18px;
+    font-size: 0.95em;
+  }
+
+  .special-banner {
+    text-align: center;
+    padding: 18px;
+    background: #fff3e0;
+    border-radius: 15px;
+    margin-bottom: 20px;
+    font-size: 1.1em;
+    font-weight: 700;
+  }
+
+  .arrow-down {
+    text-align: center;
+    font-size: 2em;
+    color: #ccc;
+    margin: 5px 0;
+  }
+
+  /* ========== FOOTER BANNER ========== */
+  .footer-banner {
+    text-align: center;
+    margin-top: 30px;
+    padding: 30px 25px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 20px;
+    color: white;
+  }
+  .footer-banner .footer-emoji {
+    font-size: 3em;
+    margin-bottom: 10px;
+  }
+  .footer-banner h2 {
+    font-size: 1.8em;
+  }
+  .footer-banner p {
+    font-size: 1.2em;
+    opacity: 0.9;
+  }
+  .footer-banner .footer-flags {
+    font-size: 2em;
+    margin-top: 10px;
+  }
+
+  /* ========== CONFETTI on all checked ========== */
+  .confetti-container {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    pointer-events: none;
+    z-index: 5000;
+    overflow: hidden;
+  }
+  .confetti-piece {
+    position: absolute;
+    top: -20px;
+    font-size: 2em;
+    animation: confettiFall 3s ease-in forwards;
+  }
+  @keyframes confettiFall {
+    0% { top: -10%; opacity: 1; transform: rotate(0deg); }
+    100% { top: 110%; opacity: 0; transform: rotate(720deg); }
+  }
+
+  /* ========== RESPONSIVE ========== */
+  /* iPad portrait */
+  @media (min-width: 700px) {
+    body { font-size: 20px; }
+    .cover h1 { font-size: 3.8em; }
+    .cover .subtitle { font-size: 2em; }
+    .day-page { padding: 30px 40px; }
+    .checklist-section { padding: 30px 40px; padding-bottom: 100px; }
+    .checklist-grid { grid-template-columns: 1fr 1fr; }
+    .nav-btn { font-size: 0.8em; min-width: 80px; }
+    .nav-btn .nav-emoji { font-size: 2em; }
+    .activity .emoji-icon { font-size: 3em; }
+    .splash-train { font-size: 7em; }
+    .splash-title { font-size: 3em; }
+  }
+
+  /* iPad landscape & larger */
+  @media (min-width: 1024px) {
+    body { font-size: 21px; }
+    .day-page { padding: 35px 60px; max-width: 1000px; margin: 0 auto; }
+    .checklist-section { padding: 35px 60px; max-width: 1000px; margin: 0 auto; padding-bottom: 100px; }
+    .cover h1 { font-size: 4.2em; }
+    .activity { padding: 22px; }
+    .photo-card img { height: 280px; }
+  }
+
+  /* Small phones */
+  @media (max-width: 400px) {
+    body { font-size: 16px; }
+    .cover h1 { font-size: 2.2em; }
+    .cover .subtitle { font-size: 1.3em; }
+    .cover .dates { font-size: 1em; padding: 12px 18px; }
+    .day-header h2 { font-size: 1.6em; }
+    .activity .emoji-icon { font-size: 2em; min-width: 40px; }
+    .nav-btn { font-size: 0.6em; min-width: 50px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ==================== SPLASH SCREEN ==================== -->
+<div id="splash">
+  <div class="splash-train">&#x1F682;</div>
+  <div class="splash-title">Aren's London<br>Adventure!</div>
+  <div class="splash-flags">&#x1F1EC;&#x1F1E7; &#x1F3F4;&#xE0067;&#xE0062;&#xE0065;&#xE006E;&#xE0067;&#xE007F; &#x1F1EC;&#x1F1E7;</div>
+  <div class="splash-loading">Getting ready<span class="splash-dots"></span></div>
+</div>
+
+<!-- ==================== BOTTOM NAV ==================== -->
+<nav class="bottom-nav" id="bottomNav">
+  <button class="nav-btn active" onclick="scrollToSection('cover')">
+    <span class="nav-emoji">&#x1F3E0;</span>
+    Home
+  </button>
+  <button class="nav-btn" onclick="scrollToSection('friday')">
+    <span class="nav-emoji">&#x1F327;&#xFE0F;</span>
+    Friday
+  </button>
+  <button class="nav-btn" onclick="scrollToSection('saturday')">
+    <span class="nav-emoji">&#x2600;&#xFE0F;</span>
+    Saturday
+  </button>
+  <button class="nav-btn" onclick="scrollToSection('sunday')">
+    <span class="nav-emoji">&#x1F682;</span>
+    Sunday
+  </button>
+  <button class="nav-btn" onclick="scrollToSection('monday')">
+    <span class="nav-emoji">&#x1F3C1;</span>
+    Monday
+  </button>
+  <button class="nav-btn" onclick="scrollToSection('checklist')">
+    <span class="nav-emoji">&#x2705;</span>
+    Rides
+  </button>
+</nav>
+
+<!-- ==================== COVER PAGE ==================== -->
+<div class="cover" id="cover">
+  <div class="emoji-row train-row">&#x1F1EC;&#x1F1E7; &#x1F682; &#x1F1EC;&#x1F1E7;</div>
+  <h1>Aren's London<br>Adventure!</h1>
+  <div class="subtitle">4 Days of Trains, Magic<br>and Amazing Things</div>
+  <div class="dates">
+    &#x1F1EC;&#x1F1E7; Friday 13th - Monday 16th March 2026 &#x1F3F4;&#xE0067;&#xE0062;&#xE0065;&#xE006E;&#xE0067;&#xE007F;
+  </div>
+  <div class="emoji-row">&#x1F687; &#x1F68D; &#x1F695;</div>
+  <div class="train-fact">
+    &#x1F4A1; <strong>Did you know?</strong><br>
+    You will ride on <strong>12 different trains and buses</strong> on this trip!<br>
+    And kids ride the London Underground for FREE!<br>
+    &#x1F1EC;&#x1F1E7; &#x1F3F4;&#xE0067;&#xE0062;&#xE0065;&#xE006E;&#xE0067;&#xE007F; &#x1F1EC;&#x1F1E7; &#x1F3F4;&#xE0067;&#xE0062;&#xE0065;&#xE006E;&#xE0067;&#xE007F;
+  </div>
+  <div class="scroll-hint">&#x1F447; Swipe up to start! &#x1F447;</div>
+</div>
+
+<!-- ==================== FRIDAY ==================== -->
+<div class="day-page" id="friday">
+  <div class="day-header friday-header">
+    <h2>&#x1F1EC;&#x1F1E7; FRIDAY &#x1F327;&#xFE0F;</h2>
+    <div class="day-subtitle">Day 1 - We arrive in London!</div>
+  </div>
+
+  <div class="weather-box" style="background: #bbdefb;">&#x1F327;&#xFE0F; Rainy today - but everything we do is inside!</div>
+
+  <div class="activity transport">
+    <div class="emoji-icon">&#x2708;&#xFE0F;</div>
+    <div class="activity-content">
+      <span class="time-badge">10:00</span>
+      <h3>We land at the airport!</h3>
+      <p>We fly into Stansted Airport. Then we get on a fast train called the <strong>Stansted Express</strong>. It takes us right into London!</p>
+    </div>
+  </div>
+
+  <div class="activity transport">
+    <div class="emoji-icon">&#x1F686;</div>
+    <div class="activity-content">
+      <span class="time-badge">11:00</span>
+      <h3>First Underground ride!</h3>
+      <p>We arrive at Liverpool Street and go down into the <strong>London Underground</strong> for the very first time! We ride the <strong>Circle Line</strong> for one stop.</p>
+    </div>
+  </div>
+
+  <div class="photo-row">
+    <div class="photo-card">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/63/Tower_Bridge_from_Shad_Thames.jpg/400px-Tower_Bridge_from_Shad_Thames.jpg" alt="Tower Bridge" onerror="this.parentElement.style.display='none'">
+      <div class="caption">&#x1F309; Tower Bridge</div>
+    </div>
+  </div>
+
+  <div class="activity highlight">
+    <div class="emoji-icon">&#x1F309;</div>
+    <div class="activity-content">
+      <span class="time-badge">11:30</span>
+      <h3>Tower Bridge!</h3>
+      <p>We walk on a <strong>glass floor</strong> high up above the River Thames! You can look down and see boats below your feet. It is <strong>42 metres</strong> up in the air! Alessia has a special pass to get us in.</p>
+    </div>
+  </div>
+
+  <div class="fun-fact">&#x1F4A1; <strong>Fun fact:</strong> Tower Bridge is NOT London Bridge! They are two different bridges. Tower Bridge is the one that opens up to let big ships through.</div>
+
+  <div class="activity food">
+    <div class="emoji-icon">&#x1F354;</div>
+    <div class="activity-content">
+      <span class="time-badge">12:30</span>
+      <h3>Lunch time!</h3>
+      <p>Time to eat! Leesa is coming to meet us too.</p>
+    </div>
+  </div>
+
+  <div class="activity transport">
+    <div class="emoji-icon">&#x1F687;</div>
+    <div class="activity-content">
+      <span class="time-badge">1:40</span>
+      <h3>Circle Line to Farringdon</h3>
+      <p>A nice long Tube ride - 12 minutes! Time to sit down and rest.</p>
+    </div>
+  </div>
+
+  <div class="photo-row">
+    <div class="photo-card">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f9/Mail_Rail_train_at_platform.jpg/400px-Mail_Rail_train_at_platform.jpg" alt="Mail Rail" onerror="this.parentElement.style.display='none'">
+      <div class="caption">&#x1F4E8; Mail Rail</div>
+    </div>
+  </div>
+
+  <div class="activity highlight">
+    <div class="emoji-icon">&#x1F4E8;</div>
+    <div class="activity-content">
+      <span class="time-badge">2:00</span>
+      <h3>Mail Rail - Secret Underground Train!</h3>
+      <p>We go deep under the ground to ride a <strong>tiny train</strong> through secret tunnels! These tunnels used to carry letters and parcels under London. The train is really small and goes through dark tunnels with lights. It is <strong>21 metres under the ground!</strong></p>
+    </div>
+  </div>
+
+  <div class="fun-fact">&#x1F4A1; <strong>Fun fact:</strong> Mail Rail carried 4 million letters every day! The trains ran without any drivers.</div>
+
+  <div class="activity highlight">
+    <div class="emoji-icon">&#x26A1;</div>
+    <div class="activity-content">
+      <span class="time-badge">3:30</span>
+      <h3>Platform 9 and 3/4!</h3>
+      <p>We go to <strong>King's Cross Station</strong> - the same station Harry Potter uses! There is a trolley that goes <strong>right into the wall</strong>. You can push it and get your photo taken! They give you a <strong>magic scarf</strong> and a <strong>wand</strong>. Then we can look in the <strong>Harry Potter Shop</strong> - it has Chocolate Frogs and wands!</p>
+    </div>
+  </div>
+
+  <div class="fun-fact">&#x1F4A1; <strong>Fun fact:</strong> Look at the building next door - <strong>St Pancras Station</strong>. It looks like a castle! In the Harry Potter films, they used THIS building as the outside of King's Cross.</div>
+
+  <div class="photo-row">
+    <div class="photo-card">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e8/King%27s_Cross_Platform_9%C2%BE_%287951259498%29.jpg/400px-King%27s_Cross_Platform_9%C2%BE_%287951259498%29.jpg" alt="Platform 9 3/4" onerror="this.parentElement.style.display='none'">
+      <div class="caption">&#x26A1; Platform 9 3/4</div>
+    </div>
+  </div>
+
+  <div class="activity highlight">
+    <div class="emoji-icon">&#x1F4A1;</div>
+    <div class="activity-content">
+      <span class="time-badge">4:30</span>
+      <h3>Piccadilly Circus!</h3>
+      <p>We ride the <strong>Piccadilly Line</strong> to see the <strong>giant bright screens</strong> at Piccadilly Circus! There are huge TVs everywhere and a statue called Eros. It is SO bright and busy!</p>
+    </div>
+  </div>
+
+  <div class="activity transport">
+    <div class="emoji-icon">&#x1F3E0;</div>
+    <div class="activity-content">
+      <span class="time-badge">5:00</span>
+      <h3>Home time!</h3>
+      <p>We take the <strong>Northern Line</strong> all the way to Balham where Auntie Leesa lives. Dinner, bath, stories, bed! Big day tomorrow!</p>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== SATURDAY ==================== -->
+<div class="day-page" id="saturday">
+  <div class="day-header saturday-header">
+    <h2>&#x1F3F4;&#xE0067;&#xE0062;&#xE0065;&#xE006E;&#xE0067;&#xE007F; SATURDAY &#x2600;&#xFE0F;</h2>
+    <div class="day-subtitle">Day 2 - The Big Day! Sunny and amazing!</div>
+  </div>
+
+  <div class="weather-box" style="background: #fff9c4;">&#x2600;&#xFE0F; Sunny today! The best day for seeing things outside. Wrap up warm though - only 3 to 11 degrees!</div>
+
+  <div class="activity transport">
+    <div class="emoji-icon">&#x1F687;</div>
+    <div class="activity-content">
+      <span class="time-badge">8:30</span>
+      <h3>Northern Line to Westminster</h3>
+      <p>22 minutes on the Tube to start our big day!</p>
+    </div>
+  </div>
+
+  <div class="photo-row">
+    <div class="photo-card">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/Clock_Tower_-_Palace_of_Westminster%2C_London_-_May_2007.jpg/300px-Clock_Tower_-_Palace_of_Westminster%2C_London_-_May_2007.jpg" alt="Big Ben" onerror="this.parentElement.style.display='none'">
+      <div class="caption">&#x1F552; Big Ben</div>
+    </div>
+    <div class="photo-card">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/Buckingham_Palace%2C_London_-_April_2009.jpg/400px-Buckingham_Palace%2C_London_-_April_2009.jpg" alt="Buckingham Palace" onerror="this.parentElement.style.display='none'">
+      <div class="caption">&#x1F451; Buckingham Palace</div>
+    </div>
+  </div>
+
+  <div class="activity highlight">
+    <div class="emoji-icon">&#x1F552;</div>
+    <div class="activity-content">
+      <span class="time-badge">9:00</span>
+      <h3>&#x1F1EC;&#x1F1E7; Big Ben!</h3>
+      <p>The most famous clock in the whole world! It is <strong>96 metres tall</strong>. We can hear it go BONG! We walk all around it and take photos.</p>
+    </div>
+  </div>
+
+  <div class="fun-fact">&#x1F4A1; <strong>Fun fact:</strong> Big Ben is not the name of the tower. It is the name of the big bell inside! The tower is called the Elizabeth Tower.</div>
+
+  <div class="activity">
+    <div class="emoji-icon">&#x1F3DE;&#xFE0F;</div>
+    <div class="activity-content">
+      <span class="time-badge">9:30</span>
+      <h3>Walk through St James's Park</h3>
+      <p>A really nice park with a big lake. Look for the <strong>pelicans</strong>! Yes, real pelicans live in this park in London! And lots of ducks too.</p>
+    </div>
+  </div>
+
+  <div class="activity highlight">
+    <div class="emoji-icon">&#x1F451;</div>
+    <div class="activity-content">
+      <span class="time-badge">10:00</span>
+      <h3>&#x1F1EC;&#x1F1E7; Buckingham Palace!</h3>
+      <p>This is where the <strong>King</strong> lives! &#x1F451; It has a huge gold gate and a big statue in front.</p>
+    </div>
+  </div>
+
+  <div class="activity highlight">
+    <div class="emoji-icon">&#x1F482;</div>
+    <div class="activity-content">
+      <span class="time-badge">11:00</span>
+      <h3>&#x1F3F4;&#xE0067;&#xE0062;&#xE0065;&#xE006E;&#xE0067;&#xE007F; Changing of the Guard!</h3>
+      <p>Soldiers in <strong>red coats and big fluffy hats</strong> march right past us with a band playing music! They swap over who is looking after the King. We watch from The Mall - the big red road that leads to the Palace.</p>
+    </div>
+  </div>
+
+  <div class="fun-fact">&#x1F4A1; <strong>Fun fact:</strong> The guards' big fluffy hats are made from real bear fur. Each one weighs almost half a kilo!</div>
+
+  <div class="activity highlight">
+    <div class="emoji-icon">&#x1F981;</div>
+    <div class="activity-content">
+      <span class="time-badge">12:00</span>
+      <h3>Trafalgar Square!</h3>
+      <p>A huge square with a really tall column and <strong>four giant lion statues</strong>. You can <strong>climb on the lions!</strong> There are big fountains too.</p>
+    </div>
+  </div>
+
+  <div class="photo-row">
+    <div class="photo-card">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/Trafalgar_Square%2C_London_2_-_Jun_2009.jpg/400px-Trafalgar_Square%2C_London_2_-_Jun_2009.jpg" alt="Trafalgar Square" onerror="this.parentElement.style.display='none'">
+      <div class="caption">&#x1F981; Trafalgar Square</div>
+    </div>
+  </div>
+
+  <div class="activity food">
+    <div class="emoji-icon">&#x1F355;</div>
+    <div class="activity-content">
+      <span class="time-badge">12:30</span>
+      <h3>Lunch!</h3>
+      <p>Yum yum! Eating near Trafalgar Square.</p>
+    </div>
+  </div>
+
+  <div class="activity highlight">
+    <div class="emoji-icon">&#x1F68D;</div>
+    <div class="activity-content">
+      <span class="time-badge">1:25</span>
+      <h3>&#x1F1EC;&#x1F1E7; Red Double-Decker Bus!</h3>
+      <p>We climb to the <strong>top deck</strong> of a big red London bus! We sit right at the front and see London from up high. The bus goes past famous buildings and over a bridge. So cool!</p>
+    </div>
+  </div>
+
+  <div class="activity highlight">
+    <div class="emoji-icon">&#x1F3A1;</div>
+    <div class="activity-content">
+      <span class="time-badge">2:00</span>
+      <h3>The London Eye!</h3>
+      <p>The <strong>biggest wheel in London!</strong> It is 135 metres tall. We get to see it up close and walk around it. Maybe we even go on it!</p>
+    </div>
+  </div>
+
+  <div class="photo-row">
+    <div class="photo-card">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d6/London-Eye-2009.jpg/300px-London-Eye-2009.jpg" alt="London Eye" onerror="this.parentElement.style.display='none'">
+      <div class="caption">&#x1F3A1; London Eye</div>
+    </div>
+  </div>
+
+  <div class="activity highlight">
+    <div class="emoji-icon">&#x1F695;</div>
+    <div class="activity-content">
+      <span class="time-badge">2:20</span>
+      <h3>&#x1F1EC;&#x1F1E7; Black Cab Ride!</h3>
+      <p>We get in a real <strong>London black taxi!</strong> It takes us across a big bridge over the River Thames and through the middle of London to see St Paul's. The inside of a black cab is really cool - the seats face each other!</p>
+    </div>
+  </div>
+
+  <div class="activity highlight">
+    <div class="emoji-icon">&#x26EA;</div>
+    <div class="activity-content">
+      <span class="time-badge">2:30</span>
+      <h3>St Paul's Cathedral!</h3>
+      <p>A huge church with an amazing <strong>round dome</strong> on top. It is one of the biggest churches in the world!</p>
+    </div>
+  </div>
+
+  <div class="activity highlight">
+    <div class="emoji-icon">&#x1FA84;</div>
+    <div class="activity-content">
+      <span class="time-badge">2:45</span>
+      <h3>The Harry Potter Bridge!</h3>
+      <p>This is the <strong>Millennium Bridge</strong>. In Harry Potter, the <strong>Death Eaters blow it up!</strong> We walk across it with St Paul's behind us and can see the River Thames below.</p>
+    </div>
+  </div>
+
+  <div class="photo-row">
+    <div class="photo-card">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/ec/London_Millennium_Bridge_-_geograph.org.uk_-_1491027.jpg/400px-London_Millennium_Bridge_-_geograph.org.uk_-_1491027.jpg" alt="Millennium Bridge and St Paul's" onerror="this.parentElement.style.display='none'">
+      <div class="caption">&#x1FA84; Millennium Bridge + St Paul's</div>
+    </div>
+  </div>
+
+  <div class="activity highlight" style="border-left-color: #e91e63; background: #fce4ec;">
+    <div class="emoji-icon">&#x1F682;</div>
+    <div class="activity-content">
+      <span class="time-badge" style="background: #e91e63;">3:15</span>
+      <h3>DLR - You're the Driver!</h3>
+      <p>This is the best bit! The DLR train has <strong>NO DRIVER</strong>. It drives itself! You sit at the very front and look out the big window. It feels like <strong>YOU are driving the train</strong> through London! We ride it out to Canary Wharf and back.</p>
+    </div>
+  </div>
+
+  <div class="fun-fact">&#x1F4A1; <strong>Fun fact:</strong> DLR stands for Docklands Light Railway. The trains are totally automatic - there really is no driver at all!</div>
+
+  <div class="activity transport">
+    <div class="emoji-icon">&#x1F3E0;</div>
+    <div class="activity-content">
+      <span class="time-badge">3:50</span>
+      <h3>Home time!</h3>
+      <p>Northern Line back to Balham. What a day! Red bus, black cab, DLR, AND the Tube. Time to rest!</p>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== SUNDAY ==================== -->
+<div class="day-page" id="sunday">
+  <div class="day-header sunday-header">
+    <h2>&#x1F1EC;&#x1F1E7; SUNDAY &#x1F682;</h2>
+    <div class="day-subtitle">Day 3 - The Flying Scotsman!</div>
+  </div>
+
+  <div class="weather-box" style="background: #e0e0e0;">&#x2601;&#xFE0F; Cloudy today, about 4 to 11 degrees. Dress warm for the train stations!</div>
+
+  <div class="special-banner">
+    &#x1F31F; Today we go on the most famous train in the WHOLE WORLD! &#x1F31F;
+  </div>
+
+  <div class="photo-row">
+    <div class="photo-card">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/52/LNER_Class_A3_4472_Flying_Scotsman_at_Barrow_Hill%2C_30_September_2010.jpg/400px-LNER_Class_A3_4472_Flying_Scotsman_at_Barrow_Hill%2C_30_September_2010.jpg" alt="Flying Scotsman" onerror="this.parentElement.style.display='none'">
+      <div class="caption">&#x1F682; The Flying Scotsman!</div>
+    </div>
+  </div>
+
+  <div class="activity transport">
+    <div class="emoji-icon">&#x1F687;</div>
+    <div class="activity-content">
+      <span class="time-badge">8:15</span>
+      <h3>Tube to Waterloo</h3>
+      <p>Northern Line to Waterloo Station - one of the biggest stations in London!</p>
+    </div>
+  </div>
+
+  <div class="activity transport">
+    <div class="emoji-icon">&#x1F686;</div>
+    <div class="activity-content">
+      <span class="time-badge">8:45</span>
+      <h3>Train to Alton</h3>
+      <p>We take a <strong>South Western Railway</strong> train from Waterloo. It goes for <strong>one hour</strong> through the countryside! Look out for fields, trees, and villages.</p>
+    </div>
+  </div>
+
+  <div class="activity highlight" style="border-left-color: #d32f2f; background: #ffebee;">
+    <div class="emoji-icon">&#x1F682;</div>
+    <div class="activity-content">
+      <span class="time-badge" style="background: #d32f2f;">10:00 - 2:30</span>
+      <h3>THE FLYING SCOTSMAN!</h3>
+      <p>This is it! The <strong>most famous steam train in the whole world!</strong> It is nearly <strong>100 years old</strong> and still works! We ride in carriages pulled by the real Flying Scotsman through the <strong>Hampshire countryside</strong> for 20 miles. The train goes choo-choo and puffs steam into the sky! You can smell the steam and coal. There are also <strong>tiny trains</strong> we can ride at the stations.</p>
+    </div>
+  </div>
+
+  <div class="fun-fact">&#x1F4A1; <strong>Fun fact:</strong> The Flying Scotsman was the first steam train to go <strong>100 miles per hour!</strong> It was built in 1923 - that was over 100 years ago. It is painted green and has the number 4472.</div>
+
+  <div class="activity food">
+    <div class="emoji-icon">&#x1F32D;</div>
+    <div class="activity-content">
+      <h3>Food on the train!</h3>
+      <p>There are places to get food and drinks at the stations along the way. We can eat while we watch the steam train!</p>
+    </div>
+  </div>
+
+  <div class="activity transport">
+    <div class="emoji-icon">&#x1F634;</div>
+    <div class="activity-content">
+      <span class="time-badge">3:00</span>
+      <h3>Train back to London</h3>
+      <p>Back on the South Western Railway to London. You might have a little nap! Then a quick train to Balham.</p>
+    </div>
+  </div>
+
+  <div class="activity transport">
+    <div class="emoji-icon">&#x1F3E0;</div>
+    <div class="activity-content">
+      <span class="time-badge">4:10</span>
+      <h3>Back at Leesa's!</h3>
+      <p>What an amazing day! Dinner, stories about the steam train, then bed.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== MONDAY ==================== -->
+<div class="day-page" id="monday">
+  <div class="day-header monday-header">
+    <h2>&#x1F3F4;&#xE0067;&#xE0062;&#xE0065;&#xE006E;&#xE0067;&#xE007F; MONDAY &#x1F3C1;</h2>
+    <div class="day-subtitle">Day 4 - Last morning, then home!</div>
+  </div>
+
+  <div class="weather-box" style="background: #e0e0e0;">&#x2601;&#xFE0F; Cloudy, 4-11 degrees. Our last London morning!</div>
+
+  <div class="activity highlight">
+    <div class="emoji-icon">&#x1F68C;</div>
+    <div class="activity-content">
+      <span class="time-badge">9:30</span>
+      <h3>London Transport Museum!</h3>
+      <p>This museum is all about <strong>buses and trains!</strong> There are old red buses you can climb on, old Underground trains you can go inside, and a play area called <strong>"All Aboard"</strong> where you can pretend to drive a bus! There is even a real <strong>steam train from 1866</strong> - that is really, really old!</p>
+    </div>
+  </div>
+
+  <div class="activity transport">
+    <div class="emoji-icon">&#x1F688;</div>
+    <div class="activity-content">
+      <span class="time-badge">12:00</span>
+      <h3>Elizabeth Line!</h3>
+      <p>A quick ride on the <strong>brand new Elizabeth Line</strong>. The stations are AMAZING - they look like they are from the future! Big, shiny, and super cool.</p>
+    </div>
+  </div>
+
+  <div class="activity food">
+    <div class="emoji-icon">&#x1F354;</div>
+    <div class="activity-content">
+      <span class="time-badge">12:30</span>
+      <h3>Last London lunch!</h3>
+      <p>One more yummy lunch, then back to Leesa's to get our bags.</p>
+    </div>
+  </div>
+
+  <div class="activity transport">
+    <div class="emoji-icon">&#x1F686;</div>
+    <div class="activity-content">
+      <span class="time-badge">2:15</span>
+      <h3>Thameslink to Gatwick Airport!</h3>
+      <p>Our very last train ride! <strong>Thameslink</strong> from Balham all the way to Gatwick Airport. 35 minutes - one last ride to enjoy!</p>
+    </div>
+  </div>
+
+  <div class="activity">
+    <div class="emoji-icon">&#x2708;&#xFE0F;</div>
+    <div class="activity-content">
+      <span class="time-badge">5:20</span>
+      <h3>Fly home!</h3>
+      <p>Bye bye London! What an amazing adventure!</p>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== TRANSPORT CHECKLIST ==================== -->
+<div class="checklist-section" id="checklist">
+  <div class="checklist-header">
+    <h2>&#x1F1EC;&#x1F1E7; Transport Checklist! &#x1F3F4;&#xE0067;&#xE0062;&#xE0065;&#xE006E;&#xE0067;&#xE007F;</h2>
+    <p>Tap each ride as you do it!</p>
+  </div>
+
+  <!-- Progress Counter -->
+  <div class="progress-container" id="progressContainer">
+    <div class="progress-count"><span id="progressNumber">0</span> of 12</div>
+    <div class="progress-label">rides completed!</div>
+    <div class="progress-bar-outer">
+      <div class="progress-bar-inner" id="progressBar"></div>
+    </div>
+    <div class="progress-stars" id="progressStars"></div>
+  </div>
+
+  <div class="checklist" style="background: #e8f5e9;">
+    <div class="checklist-grid" id="checklistGrid">
+
+      <div class="checklist-item" data-ride="stansted-express" onclick="toggleCheck(this)">
+        <div class="check-emoji">&#x2B1C;</div>
+        <div class="item-info"><strong>Stansted Express</strong><br><small>Friday - Airport to London</small></div>
+      </div>
+
+      <div class="checklist-item" data-ride="circle-line" onclick="toggleCheck(this)">
+        <div class="check-emoji">&#x2B1C;</div>
+        <div class="item-info"><strong>Circle Line</strong><br><small>Friday - Yellow line!</small></div>
+      </div>
+
+      <div class="checklist-item" data-ride="piccadilly-line" onclick="toggleCheck(this)">
+        <div class="check-emoji">&#x2B1C;</div>
+        <div class="item-info"><strong>Piccadilly Line</strong><br><small>Friday - Dark blue line!</small></div>
+      </div>
+
+      <div class="checklist-item" data-ride="northern-line" onclick="toggleCheck(this)">
+        <div class="check-emoji">&#x2B1C;</div>
+        <div class="item-info"><strong>Northern Line</strong><br><small>Every day - Black line! Our home line!</small></div>
+      </div>
+
+      <div class="checklist-item" data-ride="red-bus" onclick="toggleCheck(this)">
+        <div class="check-emoji">&#x2B1C;</div>
+        <div class="item-info"><strong>Red Double-Decker Bus</strong><br><small>Saturday - Top deck!</small></div>
+      </div>
+
+      <div class="checklist-item" data-ride="black-cab" onclick="toggleCheck(this)">
+        <div class="check-emoji">&#x2B1C;</div>
+        <div class="item-info"><strong>Black Cab</strong><br><small>Saturday - London taxi!</small></div>
+      </div>
+
+      <div class="checklist-item" data-ride="dlr" onclick="toggleCheck(this)">
+        <div class="check-emoji">&#x2B1C;</div>
+        <div class="item-info"><strong>DLR - No Driver!</strong><br><small>Saturday - I'm the driver!</small></div>
+      </div>
+
+      <div class="checklist-item" data-ride="south-western" onclick="toggleCheck(this)">
+        <div class="check-emoji">&#x2B1C;</div>
+        <div class="item-info"><strong>South Western Railway</strong><br><small>Sunday - To the countryside!</small></div>
+      </div>
+
+      <div class="checklist-item" data-ride="flying-scotsman" onclick="toggleCheck(this)">
+        <div class="check-emoji">&#x2B1C;</div>
+        <div class="item-info"><strong>FLYING SCOTSMAN!</strong><br><small>Sunday - Steam train!!!</small></div>
+      </div>
+
+      <div class="checklist-item" data-ride="elizabeth-line" onclick="toggleCheck(this)">
+        <div class="check-emoji">&#x2B1C;</div>
+        <div class="item-info"><strong>Elizabeth Line</strong><br><small>Monday - Brand new!</small></div>
+      </div>
+
+      <div class="checklist-item" data-ride="thameslink" onclick="toggleCheck(this)">
+        <div class="check-emoji">&#x2B1C;</div>
+        <div class="item-info"><strong>Thameslink</strong><br><small>Monday - To the airport!</small></div>
+      </div>
+
+      <div class="checklist-item" data-ride="mail-rail" onclick="toggleCheck(this)">
+        <div class="check-emoji">&#x2B1C;</div>
+        <div class="item-info"><strong>Mail Rail</strong><br><small>Friday - Secret tiny train!</small></div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="footer-banner">
+    <div class="footer-emoji">&#x1F31F; &#x1F682; &#x1F31F;</div>
+    <h2>Aren's London Adventure!</h2>
+    <p>4 days, 12 rides, 1 amazing trip!</p>
+    <div class="footer-flags">&#x1F1EC;&#x1F1E7; &#x1F3F4;&#xE0067;&#xE0062;&#xE0065;&#xE006E;&#xE0067;&#xE007F; &#x1F1EC;&#x1F1E7; &#x1F3F4;&#xE0067;&#xE0062;&#xE0065;&#xE006E;&#xE0067;&#xE007F; &#x1F1EC;&#x1F1E7;</div>
+  </div>
+</div>
+
+<!-- Confetti container -->
+<div class="confetti-container" id="confettiContainer"></div>
+
+<script>
+  // ========== SPLASH SCREEN ==========
+  window.addEventListener('load', function() {
+    setTimeout(function() {
+      document.getElementById('splash').classList.add('hide');
+      setTimeout(function() {
+        document.getElementById('splash').style.display = 'none';
+      }, 800);
+    }, 2200);
+  });
+
+  // ========== SMOOTH SCROLL NAVIGATION ==========
+  function scrollToSection(id) {
+    var el = document.getElementById(id);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }
+
+  // ========== ACTIVE NAV HIGHLIGHT ==========
+  var sections = ['cover', 'friday', 'saturday', 'sunday', 'monday', 'checklist'];
+  var navBtns = document.querySelectorAll('.nav-btn');
+
+  function updateActiveNav() {
+    var scrollPos = window.scrollY + window.innerHeight / 3;
+    var currentSection = 'cover';
+
+    for (var i = sections.length - 1; i >= 0; i--) {
+      var section = document.getElementById(sections[i]);
+      if (section && section.offsetTop <= scrollPos) {
+        currentSection = sections[i];
+        break;
+      }
+    }
+
+    navBtns.forEach(function(btn, index) {
+      if (sections[index] === currentSection) {
+        btn.classList.add('active');
+      } else {
+        btn.classList.remove('active');
+      }
+    });
+  }
+
+  var scrollTimeout;
+  window.addEventListener('scroll', function() {
+    if (scrollTimeout) cancelAnimationFrame(scrollTimeout);
+    scrollTimeout = requestAnimationFrame(updateActiveNav);
+  }, { passive: true });
+
+  // ========== SLIDE-IN ANIMATION (IntersectionObserver) ==========
+  var animateElements = document.querySelectorAll('.activity, .photo-row, .fun-fact, .checklist, .weather-box, .special-banner');
+
+  if ('IntersectionObserver' in window) {
+    var observer = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, {
+      threshold: 0.1,
+      rootMargin: '0px 0px -50px 0px'
+    });
+
+    animateElements.forEach(function(el) {
+      observer.observe(el);
+    });
+  } else {
+    // Fallback: just show everything
+    animateElements.forEach(function(el) {
+      el.classList.add('visible');
+    });
+  }
+
+  // ========== INTERACTIVE CHECKLIST ==========
+  var STORAGE_KEY = 'arens-london-checklist';
+
+  function getCheckedRides() {
+    try {
+      var data = localStorage.getItem(STORAGE_KEY);
+      return data ? JSON.parse(data) : {};
+    } catch (e) {
+      return {};
+    }
+  }
+
+  function saveCheckedRides(rides) {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(rides));
+    } catch (e) {}
+  }
+
+  function toggleCheck(item) {
+    var ride = item.getAttribute('data-ride');
+    var rides = getCheckedRides();
+    var checkEmoji = item.querySelector('.check-emoji');
+
+    if (rides[ride]) {
+      delete rides[ride];
+      checkEmoji.textContent = '\u2B1C';
+      item.classList.remove('checked');
+    } else {
+      rides[ride] = true;
+      checkEmoji.textContent = '\u2705';
+      item.classList.add('checked');
+    }
+
+    saveCheckedRides(rides);
+    updateProgress();
+  }
+
+  function updateProgress() {
+    var rides = getCheckedRides();
+    var count = Object.keys(rides).length;
+    var total = 12;
+
+    document.getElementById('progressNumber').textContent = count;
+
+    var pct = Math.round((count / total) * 100);
+    document.getElementById('progressBar').style.width = pct + '%';
+
+    // Stars display
+    var starsEl = document.getElementById('progressStars');
+    var stars = '';
+    for (var i = 0; i < total; i++) {
+      stars += i < count ? '\u2B50' : '\u2606';
+    }
+    starsEl.textContent = stars;
+
+    // Celebration if all done
+    if (count === total) {
+      celebrate();
+    }
+  }
+
+  // Restore state on page load
+  function restoreChecklist() {
+    var rides = getCheckedRides();
+    var items = document.querySelectorAll('.checklist-item');
+
+    items.forEach(function(item) {
+      var ride = item.getAttribute('data-ride');
+      if (rides[ride]) {
+        item.querySelector('.check-emoji').textContent = '\u2705';
+        item.classList.add('checked');
+      }
+    });
+
+    updateProgress();
+  }
+
+  // ========== CONFETTI CELEBRATION ==========
+  function celebrate() {
+    var container = document.getElementById('confettiContainer');
+    container.innerHTML = '';
+
+    var emojis = ['\u2B50', '\u1F389', '\u1F682', '\u1F1EC\u1F1E7', '\u1F3C6', '\u2728', '\u1F38A', '\u1F680'];
+    for (var i = 0; i < 30; i++) {
+      var piece = document.createElement('div');
+      piece.className = 'confetti-piece';
+      piece.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+      piece.style.left = Math.random() * 100 + '%';
+      piece.style.animationDelay = Math.random() * 2 + 's';
+      piece.style.animationDuration = (2 + Math.random() * 2) + 's';
+      container.appendChild(piece);
+    }
+
+    // Clean up after animation
+    setTimeout(function() {
+      container.innerHTML = '';
+    }, 5000);
+  }
+
+  // Initialize
+  restoreChecklist();
+</script>
+
+</body>
+</html>
